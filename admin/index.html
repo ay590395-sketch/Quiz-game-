@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QuizEarn Admin Panel</title>
+    <link rel="stylesheet" href="admin.css">
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-auth-compat.js"></script>
+</head>
+<body>
+    <!-- Admin Login -->
+    <div id="loginScreen" class="screen active">
+        <div class="login-container">
+            <div class="login-card">
+                <h2>🔐 Admin Login</h2>
+                <div class="input-group">
+                    <label>Username:</label>
+                    <input type="text" id="adminUsername" placeholder="Enter username">
+                </div>
+                <div class="input-group">
+                    <label>Password:</label>
+                    <input type="password" id="adminPassword" placeholder="Enter password">
+                </div>
+                <button class="btn-login" onclick="adminLogin()">Login</button>
+                <div class="demo-credentials">
+                    <p><strong>Demo Credentials:</strong></p>
+                    <p>Username: admin</p>
+                    <p>Password: admin123</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Admin Dashboard -->
+    <div id="dashboardScreen" class="screen">
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <div class="sidebar-header">
+                <h3>QuizEarn Admin</h3>
+                <p>Welcome, <span id="adminName">Admin</span></p>
+            </div>
+            <nav class="sidebar-nav">
+                <button class="nav-item active" onclick="showSection('dashboard')">
+                    📊 Dashboard
+                </button>
+                <button class="nav-item" onclick="showSection('withdrawals')">
+                    💵 Withdrawals
+                </button>
+                <button class="nav-item" onclick="showSection('users')">
+                    👥 Users
+                </button>
+                <button class="nav-item" onclick="showSection('questions')">
+                    ❓ Questions
+                </button>
+                <button class="nav-item" onclick="showSection('reports')">
+                    📈 Reports
+                </button>
+                <button class="nav-item" onclick="showSection('settings')">
+                    ⚙️ Settings
+                </button>
+                <button class="nav-item logout-btn" onclick="adminLogout()">
+                    🚪 Logout
+                </button>
+            </nav>
+        </div>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <!-- Dashboard Section -->
+            <div id="dashboardSection" class="section active">
+                <div class="section-header">
+                    <h2>📊 Dashboard Overview</h2>
+                    <div class="header-actions">
+                        <button class="btn-refresh" onclick="loadDashboardData()">🔄 Refresh</button>
+                    </div>
+                </div>
+
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-icon">👥</div>
+                        <div class="stat-info">
+                            <h3 id="totalUsers">0</h3>
+                            <p>Total Users</p>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">💵</div>
+                        <div class="stat-info">
+                            <h3 id="totalWithdrawals">0</h3>
+                            <p>Total Withdrawals</p>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">🪙</div>
+                        <div class="stat-info">
+                            <h3 id="totalCoins">0</h3>
+                            <p>Total Coins</p>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">📊</div>
+                        <div class="stat-info">
+                            <h3 id="totalQuizzes">0</h3>
+                            <p>Quizzes Played</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="charts-grid">
+                    <div class="chart-card">
+                        <h3>📈 Daily Users</h3>
+                        <div id="usersChart" class="chart-placeholder">
+                            Chart will appear here
+                        </div>
+                    </div>
+                    <div class="chart-card">
+                        <h3>💰 Revenue</h3>
+                        <div id="revenueChart" class="chart-placeholder">
+                            Chart will appear here
+                        </div>
+                    </div>
+                </div>
+
+                <div class="recent-activity">
+                    <h3>Recent Activity</h3>
+                    <div id="activityList" class="activity-list">
+                        <!-- Activity items will be loaded here -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Withdrawals Section -->
+            <div id="withdrawalsSection" class="section">
+                <div class="section-header">
+                    <h2>💵 Withdrawal Requests</h2>
+                    <div class="header-actions">
+                        <button class="btn-export" onclick="exportWithdrawals()">📤 Export</button>
+                    </div>
+                </div>
+
+                <div class="filters">
+                    <select id="withdrawalFilter" onchange="filterWithdrawals()">
+                        <option value="all">All Status</option>
+                        <option value="pending">Pending</option>
+                        <option value="approved">Approved</option>
+                        <option value="rejected">Rejected</option>
+                    </select>
+                    <input type="date" id="withdrawalDate" onchange="filterWithdrawals()">
+                </div>
+
+                <div class="table-container">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>User ID</th>
+                                <th>Coins</th>
+                                <th>Amount (₹)</th>
+                                <th>UPI ID</th>
+                                <th>Status</th>
+                                <th>Date</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="withdrawalsTable">
+                            <!-- Withdrawal data will be loaded here -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Users Section -->
+            <div id="usersSection" class="section">
+                <div class="section-header">
+                    <h2>👥 User Management</h2>
+                    <div class="header-actions">
+                        <input type="text" id="userSearch" placeholder="Search users..." onkeyup="searchUsers()">
+                        <button class="btn-export" onclick="exportUsers()">📤 Export</button>
+                    </div>
+                </div>
+
+                <div class="table-container">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>User ID</th>
+                                <th>Coins</th>
+                                <th>Referrals</th>
+                                <th>Quizzes</th>
+                                <th>Joined</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="usersTable">
+                            <!-- Users data will be loaded here -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Questions Section -->
+            <div id="questionsSection" class="section">
+                <div class="section-header">
+                    <h2>❓ Question Management</h2>
+                    <div class="header-actions">
+                        <button class="btn-primary" onclick="showAddQuestionModal()">+ Add Question</button>
+                        <button class="btn-import" onclick="showImportModal()">📥 Import</button>
+                    </div>
+                </div>
+
+                <div class="filters">
+                    <select id="categoryFilter" onchange="filterQuestions()">
+                        <option value="all">All Categories</option>
+                        <option value="general">General Knowledge</option>
+                        <option value="science">Science</option>
+                        <option value="math">Mathematics</option>
+                        <option value="sports">Sports</option>
+                    </select>
+                    <select id="difficultyFilter" onchange="filterQuestions()">
+                        <option value="all">All Difficulties</option>
+                        <option value="easy">Easy</option>
+                        <option value="medium">Medium</option>
+                        <option value="hard">Hard</option>
+                    </select>
+                </div>
+
+                <div class="table-container">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Question</th>
+                                <th>Category</th>
+                                <th>Difficulty</th>
+                                <th>Options</th>
+                                <th>Correct</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="questionsTable">
+                            <!-- Questions data will be loaded here -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Reports Section -->
+            <div id="reportsSection" class="section">
+                <div class="section-header">
+                    <h2>📈 Reports & Analytics</h2>
+                    <div class="header-actions">
+                        <select id="reportPeriod" onchange="generateReports()">
+                            <option value="7">Last 7 Days</option>
+                            <option value="30">Last 30 Days</option>
+                            <option value="90">Last 90 Days</option>
+                        </select>
+                        <button class="btn-export" onclick="exportReport()">📤 Export Report</button>
+                    </div>
+                </div>
+
+                <div class="reports-grid">
+                    <div class="report-card">
+                        <h3>User Growth</h3>
+                        <div id="userGrowthChart" class="chart-placeholder">
+                            User growth chart
+                        </div>
+                    </div>
+                    <div class="report-card">
+                        <h3>Revenue Analysis</h3>
+                        <div id="revenueAnalysisChart" class="chart-placeholder">
+                            Revenue analysis chart
+                        </div>
+                    </div>
+                    <div class="report-card">
+                        <h3>Quiz Performance</h3>
+                        <div id="quizPerformanceChart" class="chart-placeholder">
+                            Quiz performance chart
+                        </div>
+                    </div>
+                    <div class="report-card">
+                        <h3>Withdrawal Trends</h3>
+                        <div id="withdrawalTrendChart" class="chart-placeholder">
+                            Withdrawal trends chart
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Settings Section -->
+            <div id="settingsSection" class="section">
+                <div class="section-header">
+                    <h2>⚙️ System Settings</h2>
+                </div>
+
+                <div class="settings-grid">
+                    <div class="setting-card">
+                        <h3>💰 Coin Settings</h3>
+                        <div class="setting-group">
+                            <label>Easy Quiz Coins Range:</label>
+                            <input type="number" id="easyMin" placeholder="Min" value="10">
+                            <input type="number" id="easyMax" placeholder="Max" value="20">
+                        </div>
+                        <div class="setting-group">
+                            <label>Medium Quiz Coins Range:</label>
+                            <input type="number" id="mediumMin" placeholder="Min" value="30">
+                            <input type="number" id="mediumMax" placeholder="Max" value="50">
+                        </div>
+                        <div class="setting-group">
+                            <label>Hard Quiz Coins Range:</label>
+                            <input type="number" id="hardMin" placeholder="Min" value="60">
+                            <input type="number" id="hardMax" placeholder="Max" value="100">
+                        </div>
+                        <button class="btn-save" onclick="saveCoinSettings()">Save Settings</button>
+                    </div>
+
+                    <div class="setting-card">
+                        <h3>🎯 Referral Settings</h3>
+                        <div class="setting-group">
+                            <label>Referrer Bonus:</label>
+                            <input type="number" id="referrerBonus" value="4000">
+                        </div>
+                        <div class="setting-group">
+                            <label>Referred Bonus:</label>
+                            <input type="number" id="referredBonus" value="2000">
+                        </div>
+                        <button class="btn-save" onclick="saveReferralSettings()">Save Settings</button>
+                    </div>
+
+                    <div class="setting-card">
+                        <h3>💸 Withdrawal Settings</h3>
+                        <div class="setting-group">
+                            <label>Minimum Withdrawal (Coins):</label>
+                            <input type="number" id="minWithdrawal" value="5000">
+                        </div>
+                        <div class="setting-group">
+                            <label>Conversion Rate (Coins to ₹):</label>
+                            <input type="number" id="conversionRate" value="100" step="0.01">
+                        </div>
+                        <button class="btn-save" onclick="saveWithdrawalSettings()">Save Settings</button>
+                    </div>
+
+                    <div class="setting-card">
+                        <h3>🔒 Admin Settings</h3>
+                        <div class="setting-group">
+                            <label>Change Username:</label>
+                            <input type="text" id="newUsername" placeholder="New username">
+                        </div>
+                        <div class="setting-group">
+                            <label>Change Password:</label>
+                            <input type="password" id="newPassword" placeholder="New password">
+                        </div>
+                        <button class="btn-save" onclick="changeAdminCredentials()">Update Credentials</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modals -->
+    <div id="withdrawalModal" class="modal">
+        <div class="modal-content">
+            <h3>Process Withdrawal</h3>
+            <div id="withdrawalDetails"></div>
+            <div class="modal-actions">
+                <button class="btn-approve" onclick="approveWithdrawal()">Approve</button>
+                <button class="btn-reject" onclick="rejectWithdrawal()">Reject</button>
+                <button class="btn-cancel" onclick="closeModal()">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="addQuestionModal" class="modal">
+        <div class="modal-content">
+            <h3>Add New Question</h3>
+            <div class="form-group">
+                <label>Question:</label>
+                <textarea id="newQuestion" placeholder="Enter question"></textarea>
+            </div>
+            <div class="form-group">
+                <label>Category:</label>
+                <select id="newCategory">
+                    <option value="general">General Knowledge</option>
+                    <option value="science">Science</option>
+                    <option value="math">Mathematics</option>
+                    <option value="sports">Sports</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Difficulty:</label>
+                <select id="newDifficulty">
+                    <option value="easy">Easy</option>
+                    <option value="medium">Medium</option>
+                    <option value="hard">Hard</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Options:</label>
+                <input type="text" id="optionA" placeholder="Option A">
+                <input type="text" id="optionB" placeholder="Option B">
+                <input type="text" id="optionC" placeholder="Option C">
+                <input type="text" id="optionD" placeholder="Option D">
+            </div>
+            <div class="form-group">
+                <label>Correct Answer:</label>
+                <select id="correctAnswer">
+                    <option value="0">Option A</option>
+                    <option value="1">Option B</option>
+                    <option value="2">Option C</option>
+                    <option value="3">Option D</option>
+                </select>
+            </div>
+            <div class="modal-actions">
+                <button class="btn-save" onclick="saveQuestion()">Save Question</button>
+                <button class="btn-cancel" onclick="closeModal()">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="../firebase.js"></script>
+    <script src="admin.js"></script>
+</body>
+          </html>
