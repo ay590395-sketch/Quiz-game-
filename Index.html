@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QuizEarn - Play & Earn Money</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-auth-compat.js"></script>
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-YOUR_ADMOB_ID" crossorigin="anonymous"></script>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-logo">QuizEarn 💰</div>
+            <div class="nav-wallet">
+                <span id="coinBalance">0</span> 🪙
+            </div>
+        </div>
+    </nav>
+
+    <div id="screens">
+        <!-- Home Screen -->
+        <div id="homeScreen" class="screen active">
+            <div class="container">
+                <div class="user-info">
+                    <h2>Welcome, <span id="userName">User</span>!</h2>
+                    <div class="balance-card">
+                        <h3>Your Balance</h3>
+                        <div class="balance-amount" id="userBalance">0 Coins</div>
+                        <button class="btn-withdraw" onclick="showWithdrawScreen()">Withdraw 💵</button>
+                    </div>
+                </div>
+
+                <div class="daily-bonus">
+                    <h3>🎁 Daily Bonus</h3>
+                    <button id="dailyBonusBtn" class="btn-bonus" onclick="claimDailyBonus()">Claim 10 Coins</button>
+                </div>
+
+                <div class="categories">
+                    <h3>📚 Quiz Categories</h3>
+                    <div class="category-grid">
+                        <div class="category-card" onclick="startQuiz('general', 'easy')">
+                            <h4>General Knowledge</h4>
+                            <p>Easy - 10-20 Coins</p>
+                        </div>
+                        <div class="category-card" onclick="startQuiz('science', 'medium')">
+                            <h4>Science</h4>
+                            <p>Medium - 30-50 Coins</p>
+                        </div>
+                        <div class="category-card" onclick="startQuiz('math', 'hard')">
+                            <h4>Mathematics</h4>
+                            <p>Hard - 60-100 Coins</p>
+                        </div>
+                        <div class="category-card" onclick="startQuiz('sports', 'easy')">
+                            <h4>Sports</h4>
+                            <p>Easy - 10-20 Coins</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="quick-actions">
+                    <button class="btn-referral" onclick="showReferralScreen()">
+                        👥 Refer & Get 4000 Coins
+                    </button>
+                    <button class="btn-leaderboard" onclick="showLeaderboard()">
+                        🏆 Leaderboard
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quiz Screen -->
+        <div id="quizScreen" class="screen">
+            <div class="container">
+                <div class="quiz-header">
+                    <div class="quiz-progress">
+                        Question <span id="currentQ">1</span>/<span id="totalQ">10</span>
+                    </div>
+                    <div class="quiz-timer">
+                        ⏱️ <span id="timer">30</span>s
+                    </div>
+                    <div class="quiz-coins">
+                        🪙 +<span id="questionCoins">20</span>
+                    </div>
+                </div>
+
+                <div class="question-card">
+                    <h3 id="questionText">Loading question...</h3>
+                    <div class="options-grid">
+                        <div class="option" onclick="selectOption(0)"><span id="option0">Option 1</span></div>
+                        <div class="option" onclick="selectOption(1)"><span id="option1">Option 2</span></div>
+                        <div class="option" onclick="selectOption(2)"><span id="option2">Option 3</span></div>
+                        <div class="option" onclick="selectOption(3)"><span id="option3">Option 4</span></div>
+                    </div>
+                </div>
+
+                <div class="quiz-actions">
+                    <button class="btn-skip" onclick="skipQuestion()" id="skipBtn">Skip (3 left)</button>
+                    <button class="btn-next" onclick="nextQuestion()" id="nextBtn" disabled>Next Question</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Results Screen -->
+        <div id="resultScreen" class="screen">
+            <div class="container">
+                <div class="result-card">
+                    <h2>🎉 Quiz Completed!</h2>
+                    <div class="score-display">
+                        <div class="score-item"><span>Correct Answers:</span><span id="correctAnswers">0</span></div>
+                        <div class="score-item"><span>Coins Earned:</span><span id="coinsEarned">0</span> 🪙</div>
+                        <div class="score-item"><span>Total Balance:</span><span id="totalBalance">0</span> 🪙</div>
+                    </div>
+                    <button class="btn-home" onclick="showHomeScreen()">Play Another Quiz</button>
+                    <button class="btn-share" onclick="shareResult()">Share Score 📱</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Withdrawal Screen -->
+        <div id="withdrawScreen" class="screen">
+            <div class="container">
+                <h2>💵 Withdraw Money</h2>
+                <div class="withdraw-info">
+                    <p>Minimum withdrawal: 5000 coins (₹50)</p>
+                    <p>Current balance: <span id="withdrawBalance">0</span> coins</p>
+                </div>
+                
+                <div class="withdraw-amount">
+                    <label>Enter Amount (in coins):</label>
+                    <input type="number" id="withdrawCoins" placeholder="5000" min="5000">
+                    <small>You will receive: ₹<span id="withdrawAmount">0</span></small>
+                </div>
+
+                <div class="payment-method">
+                    <label>Payment Method:</label>
+                    <select id="paymentMethod">
+                        <option value="upi">UPI</option>
+                        <option value="paytm">Paytm</option>
+                        <option value="phonepe">PhonePe</option>
+                    </select>
+                </div>
+
+                <div class="upi-details" id="upiDetails">
+                    <label>UPI ID:</label>
+                    <input type="text" id="upiId" placeholder="yourname@upi">
+                </div>
+
+                <button class="btn-withdraw-request" onclick="submitWithdrawal()">Submit Withdrawal Request</button>
+
+                <div class="withdrawal-history">
+                    <h3>Recent Withdrawals</h3>
+                    <div id="withdrawalList"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Referral Screen -->
+        <div id="referralScreen" class="screen">
+            <div class="container">
+                <h2>👥 Refer & Earn</h2>
+                <div class="referral-card">
+                    <div class="referral-bonus">
+                        <h3>🎁 You Get: 4000 Coins</h3>
+                        <h3>🎁 Friend Gets: 2000 Coins</h3>
+                    </div>
+                    
+                    <div class="referral-code">
+                        <label>Your Referral Code:</label>
+                        <div class="code-display">
+                            <span id="referralCode">LOADING...</span>
+                            <button onclick="copyReferralCode()">Copy</button>
+                        </div>
+                    </div>
+
+                    <div class="referral-link">
+                        <label>Your Referral Link:</label>
+                        <div class="link-display">
+                            <span id="referralLink">Loading...</span>
+                            <button onclick="copyReferralLink()">Copy</button>
+                        </div>
+                    </div>
+
+                    <div class="referral-stats">
+                        <div class="stat-item">
+                            <span>Total Referrals:</span>
+                            <span id="totalReferrals">0</span>
+                        </div>
+                        <div class="stat-item">
+                            <span>Earned from Referrals:</span>
+                            <span id="referralEarnings">0</span> coins
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="adContainer"></div>
+
+    <script src="firebase.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>
