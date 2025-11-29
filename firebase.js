@@ -1,12 +1,12 @@
 // Firebase Configuration
 const firebaseConfig = {
-    // YAHAN APNA FIREBASE CONFIG AAYEGA - ABHI TEMPORARY
-    apiKey: "temporary-config",
-    authDomain: "quiz-earn-app.firebaseapp.com",
-    projectId: "quiz-earn-app",
-    storageBucket: "quiz-earn-app.appspot.com",
-    messagingSenderId: "123456789",
-    appId: "1:123456789:web:abcdef123456"
+  apiKey: "AIzaSyBqRE5oaZWVSE8lul6ghMoM_SSKYdjzYeM",
+  authDomain: "quiz-game-88b93.firebaseapp.com",
+  databaseURL: "https://quiz-game-88b93-default-rtdb.firebaseio.com",
+  projectId: "quiz-game-88b93",
+  storageBucket: "quiz-game-88b93.firebasestorage.app",
+  messagingSenderId: "562920331108",
+  appId: "1:562920331108:web:4da226b73a20de10d38c71"
 };
 
 // Initialize Firebase
