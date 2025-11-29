@@ -25,7 +25,41 @@ const sampleQuestions = {
         ]
     }
 };
+// Login Functions
+function showLoginScreen() {
+    showScreen('loginScreen');
+}
 
+function showPhoneLogin() {
+    showScreen('phoneLoginScreen');
+}
+
+function guestLogin() {
+    // Anonymous login - current system
+    alert('Welcome! Starting as guest...');
+    showScreen('homeScreen');
+}
+
+function googleLogin() {
+    alert('Google login coming soon! Using guest mode for now.');
+    showScreen('homeScreen');
+}
+
+function verifyPhoneLogin() {
+    const phone = document.getElementById('phoneNumber').value;
+    const otp = document.getElementById('phoneOTP').value;
+    
+    if(phone && otp) {
+        alert('Phone login successful!');
+        showScreen('homeScreen');
+    } else {
+        alert('Please enter phone number and OTP');
+    }
+}
+
+// Update initialization
+// showScreen('homeScreen'); - REMOVE THIS LINE
+showScreen('loginScreen'); // ADD THIS LINE
 // Screen Management
 function showScreen(screenId) {
     document.querySelectorAll('.screen').forEach(screen => {
