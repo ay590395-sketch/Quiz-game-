@@ -21,6 +21,58 @@
     </nav>
 
     <div id="screens">
+        <!-- Login Screen -->
+<div id="loginScreen" class="screen active">
+    <div class="container">
+        <div class="login-card">
+            <h2>🎯 Welcome to QuizEarn!</h2>
+            <p>Play Quiz & Earn Real Money 💰</p>
+            
+            <div class="login-options">
+                <button class="btn-google" onclick="googleLogin()">
+                    📱 Continue with Google
+                </button>
+                
+                <button class="btn-phone" onclick="showPhoneLogin()">
+                    📞 Continue with Phone
+                </button>
+                
+                <button class="btn-guest" onclick="guestLogin()">
+                    🎮 Play as Guest
+                </button>
+            </div>
+            
+            <div class="login-features">
+                <h3>✨ Features:</h3>
+                <ul>
+                    <li>✅ Play Quiz & Earn Coins</li>
+                    <li>✅ Withdraw Real Money via UPI</li>
+                    <li>✅ Refer Friends & Earn 4000 Coins</li>
+                    <li>✅ Daily Bonus & Rewards</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Phone Login Screen -->
+<div id="phoneLoginScreen" class="screen">
+    <div class="container">
+        <div class="login-card">
+            <h2>📞 Phone Login</h2>
+            <div class="input-group">
+                <label>Phone Number:</label>
+                <input type="tel" id="phoneNumber" placeholder="+91 9876543210">
+            </div>
+            <div class="input-group">
+                <label>OTP:</label>
+                <input type="text" id="phoneOTP" placeholder="Enter OTP">
+            </div>
+            <button class="btn-login" onclick="verifyPhoneLogin()">Verify OTP</button>
+            <button class="btn-back" onclick="showLoginScreen()">← Back</button>
+        </div>
+    </div>
+</div>
         <!-- Home Screen -->
         <div id="homeScreen" class="screen active">
             <div class="container">
